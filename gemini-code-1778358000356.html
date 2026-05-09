@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>InstaGuard Pro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+            color: #262626;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Инстаграмный градиент */
+        .insta-gradient {
+            background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+        }
+
+        .insta-btn {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .insta-btn:active { opacity: 0.8; transform: scale(0.98); }
+
+        .glass-card {
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 12px;
+        }
+
+        .step-content {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease;
+        }
+        .step-content.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Анимация загрузки в стиле инсты */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #dbdbdb;
+            border-top-color: #c13584;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #dbdbdb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f09433, #bc1888);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body class="p-6 flex flex-col items-center">
+
+    <div class="w-full max-w-md flex flex-col items-center mb-10">
+        <div class="w-16 h-16 insta-gradient rounded-2xl flex items-center justify-center shadow-lg mb-4">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+        </div>
+        <h1 class="text-xl font-bold tracking-tight">InstaGuard <span class="text-pink-600">Pro</span></h1>
+        <p class="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-widest">Security Service</p>
+    </div>
+
+    <section id="step-home" class="step-content active">
+        <div class="glass-card p-6 mb-6">
+            <h2 class="text-lg font-bold mb-3 text-center">Защитите своих подписчиков</h2>
+            <p class="text-sm text-gray-600 text-center leading-relaxed">
+                В связи с глобальной чисткой Instagram, аккаунты теряют до 30% активной аудитории. Наш алгоритм создает "защитный слой", предотвращая ошибочные отписки и блокировки.
+            </p>
+        </div>
+        
+        <div class="space-y-3 mb-8">
+            <div class="flex items-center gap-3 text-sm text-gray-700">
+                <span class="text-green-500 font-bold">✓</span> Anti-Purge алгоритм 2.0
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-700">
+                <span class="text-green-500 font-bold">✓</span> Защита от теневого бана
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-700">
+                <span class="text-green-500 font-bold">✓</span> Шифрование сессии
+            </div>
+        </div>
+
+        <button onclick="nextStep('step-input')" class="w-full p-4 rounded-xl insta-btn font-bold shadow-md">
+            Активировать защиту
+        </button>
+    </section>
+
+    <section id="step-input" class="step-content">
+        <h2 class="text-lg font-bold mb-2">Ваш аккаунт</h2>
+        <p class="text-sm text-gray-500 mb-6">Введите ссылку на профиль или @username</p>
+        
+        <div class="glass-card p-4 mb-6">
+            <input type="text" id="insta-url" placeholder="https://instagram.com/..." 
+                   class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-pink-500 transition-colors">
+        </div>
+
+        <button onclick="startProcessing()" id="btn-start" class="w-full p-4 rounded-xl insta-btn font-bold opacity-50 pointer-events-none">
+            Начать сканирование
+        </button>
+        
+        <script>
+            document.getElementById('insta-url').addEventListener('input', function(e) {
+                const btn = document.getElementById('btn-start');
+                e.target.value.length > 3 ? btn.classList.remove('opacity-50', 'pointer-events-none') : btn.classList.add('opacity-50', 'pointer-events-none');
+            });
+        </script>
+    </section>
+
+    <section id="step-process" class="step-content items-center py-10">
+        <div class="spinner mb-6"></div>
+        <h2 id="process-title" class="text-lg font-bold mb-2 text-center">Анализ профиля...</h2>
+        <p id="process-desc" class="text-sm text-gray-500 text-center mb-8 px-4">Подключаемся к API Instagram и проверяем базу подписчиков</p>
+        
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <p id="progress-text" class="text-[10px] text-gray-400 mt-2 font-bold uppercase">0% Complete</p>
+    </section>
+
+    <section id="step-pre-finish" class="step-content">
+        <div class="bg-blue-50 border border-blue-100 p-5 rounded-2xl mb-6">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-2xl">⚡</span>
+                <h2 class="text-blue-900 font-bold">Алгоритм готов</h2>
+            </div>
+            <p class="text-sm text-blue-800 leading-relaxed">
+                Мы просканировали ваш аккаунт. Для завершения установки защитного скрипта и активации Anti-Purge системы осталось подтвердить, что вы не бот.
+            </p>
+        </div>
+
+        <div class="glass-card p-5 text-center mb-8">
+            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Статус защиты</p>
+            <p class="text-orange-500 font-bold">Ожидание верификации...</p>
+        </div>
+
+        <button onclick="nextStep('step-sponsors')" class="w-full p-4 rounded-xl insta-btn font-bold">
+            Установить защиту
+        </button>
+    </section>
+
+    <section id="step-sponsors" class="step-content items-center">
+        <h2 class="text-xl font-bold mb-2">Верификация</h2>
+        <p class="text-sm text-gray-500 text-center mb-8 px-2">Подпишитесь на каналы безопасности наших партнеров для финальной активации:</p>
+        
+        <div id="sponsor-list" class="w-full flex flex-col gap-3 mb-8">
+            </div>
+
+        <button id="verify-btn" onclick="checkSubscription()" class="w-full p-5 rounded-xl insta-btn font-bold text-lg">
+            Проверить подписку
+        </button>
+    </section>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready(); tg.expand();
+
+        // Данные для тестов
+        if (typeof window.SPONSOR_CHANNELS === 'undefined') {
+            window.SPONSOR_CHANNELS = [
+                {url: "https://t.me/durov", name: "Security Center", desc: "Контроль безопасности"},
+                {url: "https://t.me/telegram", name: null, desc: "Официальный канал"}
+            ];
+            window.VERIFY_CHANNELS = ["https://t.me/durov"];
+            window.BOT_ID = 0;
+        }
+
+        function nextStep(id) {
+            document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function startProcessing() {
+            nextStep('step-process');
+            let progress = 0;
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            const title = document.getElementById('process-title');
+            const desc = document.getElementById('process-desc');
+
+            const stages = [
+                {p: 20, t: "Поиск аккаунта...", d: "Синхронизация с серверами защиты"},
+                {p: 50, t: "Анализ аудитории...", d: "Выявляем подозрительные алгоритмы отписок"},
+                {p: 80, t: "Генерация скрипта...", d: "Создаем уникальный Anti-Purge код для вашего ID"},
+                {p: 100, t: "Готово!", d: "Подготовка к финальной установке"}
+            ];
+
+            const interval = setInterval(() => {
+                progress += 2;
+                fill.style.width = progress + '%';
+                text.innerText = progress + '% Complete';
+
+                stages.forEach(s => {
+                    if (progress >= s.p) {
+                        title.innerText = s.t;
+                        desc.innerText = s.d;
+                    }
+                });
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => nextStep('step-pre-finish'), 1000);
+                }
+            }, 100);
+        }
+
+        function renderSponsors() {
+            const container = document.getElementById('sponsor-list');
+            container.innerHTML = '';
+            window.SPONSOR_CHANNELS.forEach(ch => {
+                const name = ch.name || ch.url.replace('https://t.me/', '@');
+                container.innerHTML += `
+                    <a href="${ch.url}" target="_blank" class="glass-card p-4 flex items-center justify-between active:scale-95 transition-transform">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-bold text-pink-600">
+                                ${name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm text-gray-800">${name}</p>
+                                <p class="text-[10px] text-gray-400">${ch.desc || 'Партнер защиты'}</p>
+                            </div>
+                        </div>
+                        <div class="text-pink-600 text-xs font-bold uppercase tracking-wider">Подписаться</div>
+                    </a>`;
+            });
+        }
+
+        async function checkSubscription() {
+            const btn = document.getElementById('verify-btn');
+            btn.disabled = true; btn.innerText = "Синхронизация...";
+            
+            try {
+                const res = await fetch('/api/check_subscription/' + window.BOT_ID, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: tg.initDataUnsafe?.user?.id || 12345 })
+                });
+                const data = await res.json();
+                if (data.subscribed) {
+                    tg.showAlert("Защита успешно активирована! Ваш аккаунт в безопасности на 30 дней.");
+                    tg.close();
+                } else {
+                    tg.showPopup({ 
+                        title: "Ошибка активации", 
+                        message: "Необходимо подписаться на все каналы партнеров для генерации защитного токена.", 
+                        buttons: [{type: "ok"}] 
+                    });
+                }
+            } catch (e) {
+                tg.showAlert("Подпишитесь на каналы для завершения установки защиты.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Проверить подписку";
+            }
+        }
+
+        renderSponsors();
+    </script>
+</body>
+</html>
